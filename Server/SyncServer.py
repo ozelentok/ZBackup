@@ -26,8 +26,8 @@ class SyncServer(object):
     def init_backup_dirs(self):
         for user in self.config['users']:
             try:
-                userDir = os.path.join(self.config['root_file_dir'], user)
-                os.mkdir(userDir)
+                user_dir = os.path.join(self.config['root_file_dir'], user)
+                os.mkdir(user_dir)
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
@@ -58,7 +58,7 @@ class SyncServer(object):
             return user_dir
         conn.send_code(ErrorCode.fail.value)
         return False
-            
+
     def handle_new_connection(self, conn, addr):
         try:
             self.logger.log("New connection from {}:{}".format(*addr))

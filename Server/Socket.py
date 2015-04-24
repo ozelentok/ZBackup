@@ -7,10 +7,10 @@ class ServerSocket(object):
         plain_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         plain_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket = ssl.wrap_socket(plain_socket,
-            server_side=True,
-            certfile=certfile,
-            keyfile=keyfile,
-            ssl_version=ssl.PROTOCOL_TLSv1)
+                                        server_side=True,
+                                        certfile=certfile,
+                                        keyfile=keyfile,
+                                        ssl_version=ssl.PROTOCOL_TLSv1)
 
     def bind(self, host, port, max_connections):
         self.socket.bind((host, port))
@@ -24,7 +24,7 @@ class ServerSocket(object):
     def close(self):
         self.socket.close()
 
-class Socket:
+class Socket(object):
     def __init__(self, base_socket):
         self.socket = base_socket
 
@@ -52,10 +52,10 @@ class Socket:
         self.socket.send(struct.pack('!q', code))
 
     def recv_long_code(self):
-        LENGTH_SIZE = 8
+        length_size = 8
         length_buffer = b''
-        while len(length_buffer) < LENGTH_SIZE:
-            bytes_recv = self.socket.recv(LENGTH_SIZE - len(length_buffer))
+        while len(length_buffer) < length_size:
+            bytes_recv = self.socket.recv(length_size - len(length_buffer))
             if bytes_recv == None:
                 raise socket.error('Connection disconnected')
             length_buffer += bytes_recv
@@ -63,10 +63,10 @@ class Socket:
 
 
     def _recv_length(self):
-        LENGTH_SIZE = 4
+        length_size = 4
         length_buffer = b''
-        while len(length_buffer) < LENGTH_SIZE:
-            bytes_recv = self.socket.recv(LENGTH_SIZE - len(length_buffer))
+        while len(length_buffer) < length_size:
+            bytes_recv = self.socket.recv(length_size - len(length_buffer))
             if bytes_recv == None:
                 raise socket.error('Connection disconnected')
             length_buffer += bytes_recv

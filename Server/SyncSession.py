@@ -80,7 +80,7 @@ class SyncSession(object):
         self.conn.send_code(ErrorCode.fail.value)
 
     def write_uploaded_file(self, file_path, file_time):
-        file_size = self.conn.recv_long_code();
+        file_size = self.conn.recv_long_code()
         current_size = 0
         try:
             temp_file, temp_file_path = tempfile.mkstemp(
