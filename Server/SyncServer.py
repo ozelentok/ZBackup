@@ -10,9 +10,9 @@ from SyncSession import SyncSession
 
 class SyncServer(object):
 
-    def __init__(self, config_file_path, log_file_path):
+    def __init__(self, config_file_path):
         self.init_config(config_file_path)
-        self.logger = Logger(log_file_path)
+        self.init_logger()
         self.init_backup_dirs()
 
     def init_config(self, config_file_path):
@@ -22,6 +22,10 @@ class SyncServer(object):
         self.config['users'] = self.config['users'].split(',')
         self.config['port'] = int(self.config['port'])
         self.config['timeout'] = int(self.config['timeout'])
+
+    def init_logger(self):
+        log_file_path = self.config['log_file']
+        self.logger = Logger(log_file_path)
 
     def init_backup_dirs(self):
         for user in self.config['users']:

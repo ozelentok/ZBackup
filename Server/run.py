@@ -2,7 +2,7 @@
 
 import SyncServer
 def main():
-    server = SyncServer.SyncServer('server.ini', 'log.txt')
+    server = SyncServer.SyncServer('server.ini')
     server.bind()
     server.listen()
 
