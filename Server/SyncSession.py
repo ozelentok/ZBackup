@@ -14,8 +14,8 @@ class SyncSession(object):
 
     def handle_requests(self):
         request_type = self.conn.recv_code()
-        while request_type is not RequestType.exit.value:
-            if request_type is RequestType.upload.value:
+        while request_type is not RequestType.exit:
+            if request_type is RequestType.upload:
                 self.handle_upload_request()
             else:
                 self.handle_unimplemented()
@@ -26,41 +26,41 @@ class SyncSession(object):
         file_type = self.conn.recv_code()
         file_path = self.transform_file_path(self.conn.recv())
         if file_path is None:
-            self.conn.send_code(ErrorCode.invalidpath.value)
+            self.conn.send_code(ErrorCode.invalidpath)
             return
-        if file_type is FileType.directory.value:
+        if file_type is FileType.directory:
             self.logger.log(file_path)
             self.directory_handler(file_path)
-        elif file_type is FileType.file.value:
+        elif file_type is FileType.file:
             self.logger.log(file_path)
             self.file_handler(file_path)
         else:
-            self.conn.send_code(ErrorCode.fail.value)
+            self.conn.send_code(ErrorCode.fail)
 
     def directory_handler(self, file_path):
         if not os.path.exists(file_path):
             try:
                 os.mkdir(file_path)
-                self.conn.send_code(ErrorCode.ok.value)
+                self.conn.send_code(ErrorCode.ok)
             except OSError as e:
                 self.logger.log(e)
-                self.conn.send_code(ErrorCode.fail.value)
+                self.conn.send_code(ErrorCode.fail)
         elif not os.path.isdir(file_path):
-            self.conn.send_code(ErrorCode.wrongtype.value)
+            self.conn.send_code(ErrorCode.wrongtype)
         else:
-            self.conn.send_code(ErrorCode.ok.value)
+            self.conn.send_code(ErrorCode.ok)
 
     def file_handler(self, file_path):
         file_time = self.conn.recv_long_code() / 1000;
         if not os.path.exists(file_path):
-            self.conn.send_code(ErrorCode.ok.value)
+            self.conn.send_code(ErrorCode.ok)
             self.write_uploaded_file(file_path, file_time)
         elif os.path.isdir(file_path):
-            self.conn.send_code(ErrorCode.wrongType.value)
+            self.conn.send_code(ErrorCode.wrongType)
         elif self.are_files_equal(file_path, file_time):
-            self.conn.send_code(ErrorCode.fileexists.value)
+            self.conn.send_code(ErrorCode.fileexists)
         else:
-            self.conn.send_code(ErrorCode.ok.value)
+            self.conn.send_code(ErrorCode.ok)
             self.write_uploaded_file(file_path, file_time)
 
     def are_files_equal(self, file_path, remote_file_time):
@@ -77,7 +77,7 @@ class SyncSession(object):
         return os.path.join(self.user_dir, file_path)
 
     def handle_unimplemented(self):
-        self.conn.send_code(ErrorCode.fail.value)
+        self.conn.send_code(ErrorCode.fail)
 
     def write_uploaded_file(self, file_path, file_time):
         file_size = self.conn.recv_long_code()
@@ -94,7 +94,7 @@ class SyncSession(object):
             temp_file.close()
             os.rename(temp_file_path, file_path)
             os.utime(file_path, (file_time, file_time))
-            self.conn.send_code(ErrorCode.ok.value)
+            self.conn.send_code(ErrorCode.ok)
         except IOError as e:
             self.logger.log(e)
-            self.conn.send_code(ErrorCode.fail.value)
+            self.conn.send_code(ErrorCode.fail)

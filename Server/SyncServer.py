@@ -58,9 +58,9 @@ class SyncServer(object):
         password = conn.recv().decode('utf-8')
         if user in self.config['users'] and password == self.config['password']:
             user_dir = os.path.join(self.config['root_file_dir'], user)
-            conn.send_code(ErrorCode.ok.value)
+            conn.send_code(ErrorCode.ok)
             return user_dir
-        conn.send_code(ErrorCode.fail.value)
+        conn.send_code(ErrorCode.fail)
         return False
 
     def handle_new_connection(self, conn, addr):

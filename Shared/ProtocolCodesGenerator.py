@@ -10,7 +10,6 @@ public class ProtocolCodes {{
 '''
 
 PYTHON_TEMPLATE = '''
-import enum
 {}
 '''
 
@@ -30,7 +29,7 @@ def generate_python_enum(enum_config, enum_name):
         enum_member_value = enum_config[enum_name][enum_member]
         enum_members_list.append('    {} = {}\n'.format(
             enum_member, enum_member_value))
-    enums_code = 'class {}(enum.Enum):\n{}\n'.format(
+    enums_code = 'class {}(object):\n{}\n'.format(
         enum_name, ''.join(enum_members_list))
     return enums_code
 
