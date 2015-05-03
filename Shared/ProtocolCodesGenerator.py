@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-import configparser
+#!/usr/bin/env python2
+import ConfigParser
 
 JAVA_TEMPLATE = '''
 package znet;
@@ -15,18 +15,21 @@ PYTHON_TEMPLATE = '''
 
 def generate_java_enum(enum_config, enum_name):
     enum_members_list = []
-    for enum_member in enum_config[enum_name]:
-        enum_member_value = enum_config[enum_name][enum_member]
+    enum_fields = dict((x, y) for x, y in enum_config.items(enum_name))
+    print enum_fields
+    for enum_member in enum_fields:
+        enum_member_value = enum_fields[enum_member]
         enum_members_list.append('\t\t{}'.format(
-            enum_member,  enum_member_value))
+            enum_member, enum_member_value))
     enums_code = '\tpublic enum {} {{\n{};\n\t}}\n'.format(
             enum_name, ',\n'.join(enum_members_list))
     return enums_code
 
 def generate_python_enum(enum_config, enum_name):
     enum_members_list = []
-    for enum_member in enum_config[enum_name]:
-        enum_member_value = enum_config[enum_name][enum_member]
+    enum_fields = dict((x, y) for x, y in enum_config.items(enum_name))
+    for enum_member in enum_fields:
+        enum_member_value = enum_fields[enum_member]
         enum_members_list.append('    {} = {}\n'.format(
             enum_member, enum_member_value))
     enums_code = 'class {}(object):\n{}\n'.format(
@@ -41,7 +44,7 @@ def main():
     java_enums_code = ''
     python_enums_code = ''
 
-    enum_config = configparser.ConfigParser()
+    enum_config = ConfigParser.ConfigParser()
     enum_config.read(input_file)
     for enum in enum_config.sections():
         java_enums_code += generate_java_enum(enum_config, enum)
