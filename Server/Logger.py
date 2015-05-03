@@ -7,7 +7,7 @@ class Logger(object):
 
     def log(self, text):
         time_prompt = datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')
-        output_text = '{} {}\n'.format(time_prompt, text)
+        output_text = u'{} {}\n'.format(time_prompt, text)
         sys.stdout.write(output_text)
         self.log_file.write(output_text)
         self.log_file.flush()
