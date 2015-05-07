@@ -64,6 +64,7 @@ class SyncServer(object):
         return False
 
     def handle_new_connection(self, conn, addr):
+        session = None
         try:
             self.logger.log("New connection from {}:{}".format(*addr))
             user_dir = self.validate_user(conn)
@@ -84,4 +85,5 @@ class SyncServer(object):
             self.logger.log("General Error: {}".format(e))
             traceback.print_exc()
         finally:
-            session.close()
+            if session is not None:
+                session.close()
