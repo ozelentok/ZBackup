@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Logger(object):
     def __init__(self, log_file_path):
-        self.log_file = open(log_file_path, 'ab')
+        self.log_file = open(log_file_path, 'a')
 
     def log(self, text):
         time_prompt = datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')
