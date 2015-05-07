@@ -1,5 +1,6 @@
 import os
 import tempfile
+import errno
 from ProtocolCodes import *
 
 class SyncSession(object):
@@ -57,13 +58,14 @@ class SyncSession(object):
             self.write_uploaded_file(file_path, file_time)
         elif os.path.isdir(file_path):
             self.conn.send_code(ErrorCode.wrongType)
-        elif self.are_files_equal(file_path, file_time):
+        elif SyncSession.are_files_equal(file_path, file_time):
             self.conn.send_code(ErrorCode.fileexists)
         else:
             self.conn.send_code(ErrorCode.ok)
             self.write_uploaded_file(file_path, file_time)
 
-    def are_files_equal(self, file_path, remote_file_time):
+    @staticmethod
+    def are_files_equal(file_path, remote_file_time):
         local_file_time = os.path.getmtime(file_path);
         return (local_file_time == remote_file_time)
 
@@ -92,9 +94,20 @@ class SyncSession(object):
                 current_size += len(buf)
                 temp_file.write(buf)
             temp_file.close()
-            os.rename(temp_file_path, file_path)
-            os.utime(file_path, (file_time, file_time))
+            SyncSession.rename_temp_path_to_final_path(temp_file_path,
+                file_path, file_time)
             self.conn.send_code(ErrorCode.ok)
         except IOError as e:
             self.logger.log(e)
             self.conn.send_code(ErrorCode.fail)
+
+    @staticmethod
+    def rename_temp_path_to_final_path(temp_path, final_path, file_time):
+        try:
+            os.remove(final_path)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+
+        os.rename(temp_path, final_path)
+        os.utime(final_path, (file_time, file_time))
