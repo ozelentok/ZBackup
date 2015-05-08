@@ -9,6 +9,13 @@ class SyncSession(object):
         self.user_dir = user_dir
         self.conn.settimeout(timeout)
         self.logger = logger
+    
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.close()
+        return False
 
     def close(self):
         self.conn.close()

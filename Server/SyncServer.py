@@ -64,16 +64,17 @@ class SyncServer(object):
         return False
 
     def handle_new_connection(self, conn, addr):
-        session = None
         try:
             self.logger.log("New connection from {}:{}".format(*addr))
             user_dir = self.validate_user(conn)
-            if user_dir:
-                self.logger.log("User validated")
-                session = SyncSession(conn, user_dir, self.config['timeout'], self.logger)
-                session.handle_requests()
-            else:
+            if not user_dir:
                 self.logger.log("Incorrect user and password")
+                return
+
+            self.logger.log("User validated")
+            timeout = self.config['timeout']
+            with SyncSession(conn, user_dir, timeout, self.logger) as session:
+                session.handle_requests()
 
         except socket.timeout as e:
             self.logger.log("Timeout Error {}".format(e))
@@ -84,6 +85,3 @@ class SyncServer(object):
         except Exception as e:
             self.logger.log("General Error: {}".format(e))
             traceback.print_exc()
-        finally:
-            if session is not None:
-                session.close()
