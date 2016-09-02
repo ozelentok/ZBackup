@@ -6,6 +6,7 @@
     <string name="action_add_item">Add</string>
     <string name="action_backup_all">Backup</string>
     <string name="action_backup_selected">Selected</string>
+    <string name="action_backup_cancel">Cancel</string>
     <string name="action_about">About</string>
     <string name="title_activity_main">ZBackup</string>
     <string name="title_local_backup">Local</string>

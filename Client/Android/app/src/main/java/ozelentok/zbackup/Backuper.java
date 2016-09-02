@@ -26,4 +26,6 @@ public abstract class Backuper {
     public void backup(MainActivity activity) {
         Toast.makeText(activity, "Starting Backup...", Toast.LENGTH_SHORT).show();
     }
+
+    public void cancel() {}
 }

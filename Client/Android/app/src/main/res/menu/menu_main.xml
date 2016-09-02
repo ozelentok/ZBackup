@@ -18,14 +18,20 @@
         android:orderInCategory="3"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/action_backup_cancel"
+          android:title="@string/action_backup_cancel"
+          android:orderInCategory="4"
+          app:showAsAction="never" />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
-        android:orderInCategory="4"
+        android:orderInCategory="5"
         app:showAsAction="never" />
+
 
     <item android:id="@+id/action_about"
         android:title="@string/action_about"
-        android:orderInCategory="5"
+        android:orderInCategory="6"
         app:showAsAction="never" />
 
 </menu>

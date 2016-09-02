@@ -23,6 +23,7 @@ public class NetworkBackuper extends Backuper {
     private String server;
     private short port;
     private String password;
+    private NetworkBackupTask backupTask;
 
     public NetworkBackuper(ArrayList<BackupItem> backupList, boolean onlySelected, String server, short port, String password) {
         super(backupList, onlySelected);
@@ -33,9 +34,15 @@ public class NetworkBackuper extends Backuper {
 
     @Override
     public void backup(MainActivity activity) {
-        NetworkBackupTask backupTask = new NetworkBackupTask(server, port, user, password, activity);
+        backupTask = new NetworkBackupTask(server, port, user, password, activity);
         backupTask.execute(backupItems);
         super.backup(activity);
+    }
+
+    public void cancel() {
+        if (backupTask != null) {
+            backupTask.cancel(true);
+        }
     }
 
     private class NetworkBackupTask extends AsyncTask<BackupItem, Integer, String> {
@@ -74,6 +81,9 @@ public class NetworkBackuper extends Backuper {
             for (BackupItem item : backupItems) {
                 String path = item.getLocalPath();
                 for (FileIterator iter = new FileIterator(path); iter.hasNext(); ) {
+                    if (isCancelled()) {
+                        return "Network Backup Cancelled";
+                    }
                     File f = iter.next();
                     if (!f.isDirectory()) {
                         status.totalBytesCount += f.length();
@@ -132,12 +142,22 @@ public class NetworkBackuper extends Backuper {
                             throw new IOException("Failed Login");
                         }
                         for (BackupItem item : backupItems) {
+                            if (NetworkBackupTask.this.isCancelled()) {
+                                backupStatus.resultMessage = "Network Backup Cancelled";
+                                client.close();
+                                return;
+                            }
                             String path = item.getLocalPath();
                             FileIterator iter = new FileIterator(path);
                             File rootFile = iter.next();
                             String remoteRoot = rootFile.getAbsolutePath().substring(1).replaceAll("/", "_");
                             uploadRootFileToServer(rootFile, client, remoteRoot);
                             while (iter.hasNext()) {
+                                if (NetworkBackupTask.this.isCancelled()) {
+                                    backupStatus.resultMessage = "Network Backup Cancelled";
+                                    client.close();
+                                    return;
+                                }
                                 File f = iter.next();
                                 uploadFileToServer(f, client, path, remoteRoot);
                             }
@@ -157,16 +177,24 @@ public class NetworkBackuper extends Backuper {
 
         protected void onProgressUpdate(Integer... progress) {
             nBuilder.setProgress(100, progress[0], false);
-            String formatedProgress = progress[0] + "%";
-            nBuilder.setContentText(formatedProgress);
-            style.bigText(formatedProgress);
+            String formattedProgress = progress[0] + "%";
+            nBuilder.setContentText(formattedProgress);
+            style.bigText(formattedProgress);
             nManager.notify(NOTIFICATION_ID, nBuilder.build());
         }
 
+        protected void onCancelled(String result) {
+            backupTaskDone("Network Backup Cancelled", result);
+        }
+
         protected void onPostExecute(String result) {
-            nBuilder.setContentTitle("Network Backup Finished");
+            backupTaskDone("Network Backup Finished", result);
+        }
+
+        private void backupTaskDone(String title, String result) {
+            nBuilder.setContentTitle(title);
             nBuilder.setContentText(result);
-            style.setBigContentTitle("Network Backup Finished");
+            style.setBigContentTitle(title);
             style.bigText(result);
             nBuilder.setProgress(0, 0, false);
             nBuilder.setOngoing(false);

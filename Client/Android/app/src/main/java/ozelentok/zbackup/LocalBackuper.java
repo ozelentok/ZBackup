@@ -19,15 +19,22 @@ import java.util.zip.ZipOutputStream;
 public class LocalBackuper extends Backuper{
 
     private String storageDir;
+    private LocalBackupTask backupTask;
     public LocalBackuper(ArrayList<BackupItem> backupList, boolean onlySelected, String storageDir) {
         super(backupList, onlySelected);
         this.storageDir = storageDir;
     }
 
     public void backup(MainActivity activity) {
-        LocalBackupTask backupTask = new LocalBackupTask(storageDir + '/' + user, activity);
+        backupTask = new LocalBackupTask(storageDir + '/' + user, activity);
         backupTask.execute(backupItems);
         super.backup(activity);
+    }
+
+    public void cancel() {
+        if (backupTask != null) {
+            backupTask.cancel(true);
+        }
     }
 
     private class LocalBackupTask extends AsyncTask<BackupItem, Integer, String> {
@@ -59,6 +66,9 @@ public class LocalBackuper extends Backuper{
             for (BackupItem item : backupItems) {
                 String path = item.getLocalPath();
                 for (FileIterator iter = new FileIterator(path); iter.hasNext(); ) {
+                    if (isCancelled()) {
+                        return "Local Backup Cancelled";
+                    }
                     File f = iter.next();
                     if (!f.isDirectory()) {
                         status.totalBytesCount += f.length();
@@ -70,15 +80,13 @@ public class LocalBackuper extends Backuper{
                 publishProgress(0);
                 BackupStatus backupStatus = new BackupStatus();
                 initiateZipping(backupStatus);
-                while(!backupStatus.finished)
-                {
+                while (!backupStatus.finished) {
                     int progress = (int) ((status.transferredBytesCount.get() / (float) status.totalBytesCount) * 100);
                     publishProgress(progress);
                     Thread.sleep(progressRefreshTime);
                 }
                 return backupStatus.resultMessage;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 return e.getMessage();
             }
         }
@@ -124,6 +132,10 @@ public class LocalBackuper extends Backuper{
                     try {
                         byte buffer[] = new byte[8192];
                         for (BackupItem item : backupItems) {
+                            if (LocalBackupTask.this.isCancelled()) {
+                                backupStatus.resultMessage = "Local Backup Cancelled";
+                                return;
+                            }
                             String path = item.getLocalPath();
                             FileIterator iter = new FileIterator(path);
                             File rootFile = iter.next();
@@ -132,6 +144,11 @@ public class LocalBackuper extends Backuper{
                             ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(fileStream));
                             addRootFileToZipStream(rootFile, zipStream, buffer);
                             while (iter.hasNext()) {
+                                if (LocalBackupTask.this.isCancelled()) {
+                                    backupStatus.resultMessage = "Local Backup Cancelled";
+                                    zipStream.close();
+                                    return;
+                                }
                                 File f = iter.next();
                                 addFileToZipStream(f, zipStream, path, buffer);
                             }
@@ -157,10 +174,18 @@ public class LocalBackuper extends Backuper{
             nManager.notify(NOTIFICATION_ID, nBuilder.build());
         }
 
+        protected void onCancelled(String result) {
+            backupTaskDone("Local Backup Cancelled", result);
+        }
+
         protected void onPostExecute(String result) {
-            nBuilder.setContentTitle("Local Backup Finished");
+            backupTaskDone("Local Backup Finished",result);
+        }
+
+        private void backupTaskDone(String title, String result) {
+            nBuilder.setContentTitle(title);
             nBuilder.setContentText(result);
-            style.setBigContentTitle("Local Backup Finished");
+            style.setBigContentTitle(title);
             style.bigText(result);
             nBuilder.setProgress(0, 0, false);
             nBuilder.setOngoing(false);

@@ -51,6 +51,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     private ArrayList<ArrayList<BackupItem>> backupItemsArrays;
     private BackupListAdapter[] backupAdapters;
     private boolean backupsLocked;
+    private Backuper backuper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,12 +166,25 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 startActivity(i);
                 return true;
 
+            case R.id.action_backup_cancel:
+                cancelCurrentBackup();
+                return true;
+
             case R.id.action_about:
                 showAboutDialog();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void cancelCurrentBackup() {
+        if (backuper == null) {
+            return;
+        }
+        backuper.cancel();
+        backuper = null;
+        unlockBackup();
     }
 
     private void showAboutDialog() {
@@ -211,7 +225,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     private void startLocalBackup(boolean onlySelected) {
-        Backuper backuper;
         String backupDir;
         File[] externalDirs = getExternalFilesDirs(null);
         if (externalDirs == null || externalDirs.length < 2) {
@@ -226,7 +239,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     }
 
     private void startNetworkBackup(boolean onlySelected) {
-        Backuper backuper;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         backuper = new NetworkBackuper(
                 backupItemsArrays.get(NETWORK_ARRAY), onlySelected,
