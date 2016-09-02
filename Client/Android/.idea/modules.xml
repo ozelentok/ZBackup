@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:///media/data/Docs/android-sdk/ZBackup/app/app.iml" filepath="/media/data/Docs/android-sdk/ZBackup/app/app.iml" />
+      <module fileurl="file:///media/data/Docs/Programming/Python/ZBackup/Client/Android/Android.iml" filepath="/media/data/Docs/Programming/Python/ZBackup/Client/Android/Android.iml" />
+      <module fileurl="file:///media/data/Docs/Programming/Python/ZBackup/Client/Android/app/app.iml" filepath="/media/data/Docs/Programming/Python/ZBackup/Client/Android/app/app.iml" />
     </modules>
   </component>
 </project>
-
