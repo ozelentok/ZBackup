@@ -224,18 +224,31 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         }
     }
 
-    private void startLocalBackup(boolean onlySelected) {
-        String backupDir;
-        File[] externalDirs = getExternalFilesDirs(null);
+    private void startLocalBackup(final boolean onlySelected) {
+        final File[] externalDirs = getExternalFilesDirs(null);
         if (externalDirs == null || externalDirs.length < 2) {
             Toast.makeText(this, "External SD Card Not Found", Toast.LENGTH_SHORT).show();
             return;
         }
-        backupDir = externalDirs[1].getAbsolutePath();
-        backuper = new LocalBackuper(
-                backupItemsArrays.get(LOCAL_ARRAY),
-                onlySelected, backupDir);
-        backuper.backup(this);
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+		LayoutInflater inflater = getLayoutInflater();
+		View rootView = inflater.inflate(R.layout.path_dialog_layout, null);
+		final EditText passwordEdit = (EditText) rootView.findViewById(R.id.file_path_edit_text);
+		dialogBuilder.setTitle("Password for Zip Encryption");
+		dialogBuilder.setView(rootView);
+		dialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String backupDir = externalDirs[1].getAbsolutePath();
+				char[] password = passwordEdit.getText().toString().toCharArray();
+                backuper = new LocalBackuper(
+                        backupItemsArrays.get(LOCAL_ARRAY),
+                        onlySelected, backupDir, password);
+                backuper.backup(MainActivity.this);
+            }
+        });
+		dialogBuilder.setNegativeButton("Cancel", null);
+		dialogBuilder.show();
     }
 
     private void startNetworkBackup(boolean onlySelected) {
