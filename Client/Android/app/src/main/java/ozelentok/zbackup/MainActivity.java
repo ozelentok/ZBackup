@@ -1,5 +1,6 @@
 package ozelentok.zbackup;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -15,7 +17,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -29,7 +31,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,8 +39,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-
-public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
+public class MainActivity extends AppCompatActivity implements ActionBar.TabListener {
 
     public static final int LOCAL_ARRAY = 0;
     public static final int NETWORK_ARRAY = 1;
@@ -60,12 +60,25 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         loadBackupItems();
         initAdapters();
         initPages();
+        checkForPermissions();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         saveBackupItems();
+    }
+
+    private void checkForPermissions() {
+        if (Build.VERSION.SDK_INT < 23) {
+        	return;
+        }
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        }
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
 
     private void saveBackupItems() {
