@@ -135,10 +135,13 @@ public class LocalBackuper extends Backuper {
 			zipParameters.setFileNameInZip(rootFile.getName());
 			zipParameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
 			zipParameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
-			zipParameters.setEncryptFiles(true);
-			zipParameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
-			zipParameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-			zipParameters.setPassword(zipPassword);
+
+			if (zipPassword.length > 0) {
+				zipParameters.setEncryptFiles(true);
+				zipParameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
+				zipParameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
+				zipParameters.setPassword(zipPassword);
+			}
 			if (rootFile.isDirectory()) {
 				zipParameters.setIncludeRootFolder(false);
 				zipFile.addFolder(rootFile, zipParameters);

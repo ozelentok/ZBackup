@@ -9,5 +9,6 @@
     <string name="pref_server_title">Server</string>
     <string name="pref_port_title">Port</string>
     <string name="pref_password_title">Password</string>
+    <string name="pref_zip_password_title">Zip Password</string>
 
 </resources>

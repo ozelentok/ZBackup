@@ -243,25 +243,14 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
             Toast.makeText(this, "External SD Card Not Found", Toast.LENGTH_SHORT).show();
             return;
         }
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-		LayoutInflater inflater = getLayoutInflater();
-		View rootView = inflater.inflate(R.layout.path_dialog_layout, null);
-		final EditText passwordEdit = (EditText) rootView.findViewById(R.id.file_path_edit_text);
-		dialogBuilder.setTitle("Password for Zip Encryption");
-		dialogBuilder.setView(rootView);
-		dialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String backupDir = externalDirs[1].getAbsolutePath();
-				char[] password = passwordEdit.getText().toString().toCharArray();
-                backuper = new LocalBackuper(
-                        backupItemsArrays.get(LOCAL_ARRAY),
-                        onlySelected, backupDir, password);
-                backuper.backup(MainActivity.this);
-            }
-        });
-		dialogBuilder.setNegativeButton("Cancel", null);
-		dialogBuilder.show();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String backupDir = externalDirs[1].getAbsolutePath();
+		char[] password = prefs.getString("zip_password", "").toCharArray();
+		backuper = new LocalBackuper(
+				backupItemsArrays.get(LOCAL_ARRAY),
+				onlySelected, backupDir, password);
+		backuper.backup(MainActivity.this);
     }
 
     private void startNetworkBackup(boolean onlySelected) {
