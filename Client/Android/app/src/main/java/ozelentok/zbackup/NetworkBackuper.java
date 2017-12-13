@@ -147,6 +147,12 @@ public class NetworkBackuper extends Backuper {
                                 client.close();
                                 return;
                             }
+                            long itemLastBackupTime = item.getLastFullBackupTime().getTime();
+                            if (NetworkBackuper.this.onlySelected) {
+                                itemLastBackupTime = item.getLastSelectedBackupTime().getTime();
+                            }
+                            Date newBackupTime = new Date();
+
                             String path = item.getLocalPath();
                             FileIterator iter = new FileIterator(path);
                             File rootFile = iter.next();
@@ -159,9 +165,17 @@ public class NetworkBackuper extends Backuper {
                                     return;
                                 }
                                 File f = iter.next();
+                                if (f.isFile() && f.lastModified() < itemLastBackupTime) {
+                                	continue;
+                                }
                                 uploadFileToServer(f, client, path, remoteRoot);
                             }
-                            item.setLastBackupTime(new Date());
+
+							if (NetworkBackuper.this.onlySelected) {
+								item.setLastSelectedBackupTime(newBackupTime);
+							} else {
+                                item.setLastFullBackupTime(newBackupTime);
+                            }
                         }
                         client.close();
                         backupStatus.resultMessage = "Network Backup Successful";

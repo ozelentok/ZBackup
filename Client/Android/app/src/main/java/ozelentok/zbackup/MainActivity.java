@@ -303,7 +303,8 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
             return;
         }
         item.setLocalPath(f.getAbsolutePath());
-        item.setLastBackupTime(new Date(0));
+        item.setLastFullBackupTime(new Date(0));
+        item.setLastSelectedBackupTime(new Date(0));
         backupAdapters[mViewPager.getCurrentItem()].notifyDataSetChanged();
     }
 

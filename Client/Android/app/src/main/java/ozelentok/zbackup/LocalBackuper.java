@@ -98,6 +98,8 @@ public class LocalBackuper extends Backuper {
 						backupStatus.resultMessage = "Local Backup Cancelled";
 						return;
 					}
+					Date newBackupTime = new Date();
+
 					File rootFile = new File(item.getLocalPath());
 					ZipFile zipFile = createZip(rootFile);
 					ProgressMonitor progressMonitor = addToZip(zipFile, rootFile);
@@ -113,7 +115,11 @@ public class LocalBackuper extends Backuper {
 						Thread.sleep(progressRefreshTime);
 					}
 					transferredBytesPreviousItems = this.status.transferredBytesCount.get();
-					item.setLastBackupTime(new Date());
+					if (LocalBackuper.this.onlySelected) {
+						item.setLastSelectedBackupTime(newBackupTime);
+					} else {
+						item.setLastFullBackupTime(newBackupTime);
+					}
 				}
 				backupStatus.resultMessage = "Local Backup Successful";
 			} catch (final Exception e) {

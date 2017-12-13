@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class BackupListAdapter extends BaseAdapter {
     private final ArrayList<BackupItem> backupItems;
@@ -33,8 +34,11 @@ public class BackupListAdapter extends BaseAdapter {
 
         public void initializeViews(final BackupItem item)  {
             localPathView.setText(item.getLocalPath());
-            if (item.getLastBackupTime().getTime() > 0) {
-                lastBackupView.setText(dateFormat.format(item.getLastBackupTime()));
+            long lastBackupTime = Math.max(
+                    item.getLastFullBackupTime().getTime(),
+                    item.getLastSelectedBackupTime().getTime());
+            if (lastBackupTime > 0) {
+                lastBackupView.setText(dateFormat.format(new Date(lastBackupTime)));
             } else {
                 lastBackupView.setText("");
             }
