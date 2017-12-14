@@ -45,7 +45,6 @@ public class LocalBackuper extends Backuper {
 		private NotificationManager nManager;
 		private NotificationCompat.Builder nBuilder;
 		private NotificationCompat.BigTextStyle style;
-		private TransferStatus status;
 		private char[] zipPassword;
 		private static final int NOTIFICATION_ID = 1;
 
@@ -59,7 +58,6 @@ public class LocalBackuper extends Backuper {
 			this.nManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
 			this.nBuilder = new NotificationCompat.Builder(activity);
 			this.style = new NotificationCompat.BigTextStyle().setBigContentTitle("Local Backup in Progress");
-			this.status = new TransferStatus();
 			nBuilder.setContentTitle("Local Backup in Progress");
 			nBuilder.setSmallIcon(R.drawable.ic_notification);
 			nBuilder.setStyle(style);
@@ -67,19 +65,6 @@ public class LocalBackuper extends Backuper {
 		}
 
 		protected String doInBackground(BackupItem... backupItems) {
-			for (BackupItem item : backupItems) {
-				String path = item.getLocalPath();
-				for (FileIterator iter = new FileIterator(path); iter.hasNext(); ) {
-					if (isCancelled()) {
-						return "Local Backup Cancelled";
-					}
-					File f = iter.next();
-					if (!f.isDirectory()) {
-						status.totalBytesCount += f.length();
-					}
-					status.totalFilesCount += 1;
-				}
-			}
 			try {
 				publishProgress(0);
 				BackupStatus backupStatus = new BackupStatus();
@@ -92,7 +77,6 @@ public class LocalBackuper extends Backuper {
 
 		private void zip(final BackupStatus backupStatus) {
 			try {
-				long transferredBytesPreviousItems = 0;
 				for (BackupItem item : backupItems) {
 					if (LocalBackupTask.this.isCancelled()) {
 						backupStatus.resultMessage = "Local Backup Cancelled";
@@ -103,18 +87,17 @@ public class LocalBackuper extends Backuper {
 					File rootFile = new File(item.getLocalPath());
 					ZipFile zipFile = createZip(rootFile);
 					ProgressMonitor progressMonitor = addToZip(zipFile, rootFile);
+
 					while (progressMonitor.getState() == ProgressMonitor.STATE_BUSY) {
 						if (LocalBackupTask.this.isCancelled()) {
 							progressMonitor.cancelAllTasks();
 							throw new RuntimeException("Local Backup Cancelled");
 						}
-						this.status.transferredBytesCount.set(
-								transferredBytesPreviousItems + progressMonitor.getTotalWork());
-						int progress = (int) ((status.transferredBytesCount.get() / (float) status.totalBytesCount) * 100);
+						int progress = progressMonitor.getPercentDone();
 						publishProgress(progress);
 						Thread.sleep(progressRefreshTime);
 					}
-					transferredBytesPreviousItems = this.status.transferredBytesCount.get();
+
 					if (LocalBackuper.this.onlySelected) {
 						item.setLastSelectedBackupTime(newBackupTime);
 					} else {
@@ -140,7 +123,7 @@ public class LocalBackuper extends Backuper {
 			ZipParameters zipParameters = new ZipParameters();
 			zipParameters.setFileNameInZip(rootFile.getName());
 			zipParameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-			zipParameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+			zipParameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 
 			if (zipPassword.length > 0) {
 				zipParameters.setEncryptFiles(true);

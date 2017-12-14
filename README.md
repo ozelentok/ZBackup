@@ -1,22 +1,22 @@
-#ZBackup
+# ZBackup
 - Backup program for Android devices
 - Server program is implemented in Python2 (Originally in Python3)
 - Client program is implemented in Java (for Android devices)
 
-##Backup Options
+## Backup Options
 You can backup all the entries, or only the selected ones:
 - When you backup everything, a directory named 'All' will be created and each entry will be saved there
 - When you backup selected, a directory named 'Selected' will be created and only selected entries will be saved there
 
-###Local Backup
+### Local Backup
 - Backup a file or a directory into a Zip file
 
-###Network Backup
+### Network Backup
 - Backup a file or a directory to a remote server
 
-##Installation
+## Installation
 
-###Server Installation
+### Server Installation
 - Install the latest Python2
 	*(Remember to check the "Add Python to PATH environment variable" during instllation)
 - Put the Server directory where ever you want
@@ -31,7 +31,7 @@ You can backup all the entries, or only the selected ones:
 	- log\_file (File path to the server log)
 	- password (Password to connect to the server)
 
-###Client Installation
+### Client Installation
 - Simply install the ZBackup apk that was included
 	*(You may need to enable non-google-play installations on the device)
 - Open the app, open the menu, select 'Settings' and configure:
@@ -40,12 +40,12 @@ You can backup all the entries, or only the selected ones:
 	- Password
 
 
-##How to Use
+## How to Use
 
-###Running the server
+### Running the server
 Simply run the 'run.py' file
 
-###Adding to files/directories to the ZBackup app
+### Adding to files/directories to the ZBackup app
 - Choose Local or Network backup
 - Open the menu, select 'Add'
 - To add a file:
@@ -55,7 +55,7 @@ Simply run the 'run.py' file
 	- Select a file inside the directory or anywhere else
 	- Select the new entry in the ZBackup list and edit the path
 
-###Starting a backup
+### Starting a backup
 - Choose Local or Network backup
 - If you want to backup everything, click 'BACKUP' at the top
 - If you want to backup only selected items, click 'SELECTED' at the top
