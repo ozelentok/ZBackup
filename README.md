@@ -1,6 +1,6 @@
 # ZBackup
 - Backup program for Android devices
-- Server program is implemented in Python2 (Originally in Python3)
+- Server program is implemented in Python3
 - Client program is implemented in Java (for Android devices)
 
 ## Backup Options
@@ -17,7 +17,7 @@ You can backup all the entries, or only the selected ones:
 ## Installation
 
 ### Server Installation
-- Install the latest Python2
+- Install the latest Python3
 	*(Remember to check the "Add Python to PATH environment variable" during instllation)
 - Put the Server directory where ever you want
 - Configure the 'server.ini' file
@@ -32,13 +32,11 @@ You can backup all the entries, or only the selected ones:
 	- password (Password to connect to the server)
 
 ### Client Installation
-- Simply install the ZBackup apk that was included
-	*(You may need to enable non-google-play installations on the device)
+- Install the ZBackup APK onto your Android device
 - Open the app, open the menu, select 'Settings' and configure:
-	-	Server(Hostname or IP)
+	-	Server (Hostname or IP)
 	- Port
 	- Password
-
 
 ## How to Use
 
