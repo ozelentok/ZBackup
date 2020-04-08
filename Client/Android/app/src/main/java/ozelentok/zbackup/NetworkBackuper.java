@@ -136,58 +136,55 @@ public class NetworkBackuper extends Backuper {
         }
 
         private void initiateUpload(final BackupStatus backupStatus, final String server, final short port, final String user, final String password) {
-            Runnable upload_task = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        SyncClient client = new SyncClient(server, port);
-                        boolean loggedIn = client.login(user, password);
-                        if (!loggedIn) {
-                            throw new IOException("Failed Login");
+            Runnable upload_task = () -> {
+                try {
+                    SyncClient client = new SyncClient(server, port);
+                    boolean loggedIn = client.login(user, password);
+                    if (!loggedIn) {
+                        throw new IOException("Failed Login");
+                    }
+                    for (BackupItem item : backupItems) {
+                        if (NetworkBackupTask.this.isCancelled()) {
+                            backupStatus.resultMessage = "Network Backup Cancelled";
+                            client.close();
+                            return;
                         }
-                        for (BackupItem item : backupItems) {
+                        long itemLastBackupTime = item.getLastFullBackupTime().getTime();
+                        if (NetworkBackuper.this.onlySelected) {
+                            itemLastBackupTime = item.getLastSelectedBackupTime().getTime();
+                        }
+                        Date newBackupTime = new Date();
+
+                        String path = item.getLocalPath();
+                        FileIterator iter = new FileIterator(path);
+                        File rootFile = iter.next();
+                        String remoteRoot = rootFile.getAbsolutePath().substring(1).replaceAll("/", "_");
+                        uploadRootFileToServer(rootFile, client, remoteRoot);
+                        while (iter.hasNext()) {
                             if (NetworkBackupTask.this.isCancelled()) {
                                 backupStatus.resultMessage = "Network Backup Cancelled";
                                 client.close();
                                 return;
                             }
-                            long itemLastBackupTime = item.getLastFullBackupTime().getTime();
-                            if (NetworkBackuper.this.onlySelected) {
-                                itemLastBackupTime = item.getLastSelectedBackupTime().getTime();
+                            File f = iter.next();
+                            if (f.isFile() && f.lastModified() < itemLastBackupTime) {
+                                continue;
                             }
-                            Date newBackupTime = new Date();
-
-                            String path = item.getLocalPath();
-                            FileIterator iter = new FileIterator(path);
-                            File rootFile = iter.next();
-                            String remoteRoot = rootFile.getAbsolutePath().substring(1).replaceAll("/", "_");
-                            uploadRootFileToServer(rootFile, client, remoteRoot);
-                            while (iter.hasNext()) {
-                                if (NetworkBackupTask.this.isCancelled()) {
-                                    backupStatus.resultMessage = "Network Backup Cancelled";
-                                    client.close();
-                                    return;
-                                }
-                                File f = iter.next();
-                                if (f.isFile() && f.lastModified() < itemLastBackupTime) {
-                                	continue;
-                                }
-                                uploadFileToServer(f, client, path, remoteRoot);
-                            }
-
-							if (NetworkBackuper.this.onlySelected) {
-								item.setLastSelectedBackupTime(newBackupTime);
-							} else {
-                                item.setLastFullBackupTime(newBackupTime);
-                            }
+                            uploadFileToServer(f, client, path, remoteRoot);
                         }
-                        client.close();
-                        backupStatus.resultMessage = "Network Backup Successful";
-                    } catch (final Exception e) {
-                        backupStatus.resultMessage = e.getMessage();
-                    } finally {
-                        backupStatus.finished = true;
+
+                        if (NetworkBackuper.this.onlySelected) {
+                            item.setLastSelectedBackupTime(newBackupTime);
+                        } else {
+                            item.setLastFullBackupTime(newBackupTime);
+                        }
                     }
+                    client.close();
+                    backupStatus.resultMessage = "Network Backup Successful";
+                } catch (final Exception e) {
+                    backupStatus.resultMessage = e.getMessage();
+                } finally {
+                    backupStatus.finished = true;
                 }
             };
             (new Thread(upload_task)).start();

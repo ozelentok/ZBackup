@@ -6,8 +6,10 @@
 
     <EditText
         android:id="@+id/file_path_edit_text"
+        android:inputType="text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/file_path"
         android:paddingLeft="4dp"
         android:paddingRight="4dp"
         android:text=""

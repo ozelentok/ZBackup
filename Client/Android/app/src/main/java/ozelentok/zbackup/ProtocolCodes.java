@@ -4,7 +4,7 @@ public class ProtocolCodes {
 	public enum RequestType {
 		exit,
 		download,
-		upload;
+		upload
 	}
 	public enum ErrorCode {
 		ok,
@@ -15,7 +15,7 @@ public class ProtocolCodes {
 	}
 	public enum FileType {
 		file,
-		directory;
+		directory
 	}
 
 }

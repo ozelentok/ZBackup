@@ -12,7 +12,7 @@ public abstract class Backuper {
 
     public Backuper(ArrayList<BackupItem> backupList, boolean onlySelected) {
         this.onlySelected = onlySelected;
-        ArrayList<BackupItem> tempBackupList = new ArrayList<BackupItem>(backupList.size());
+        ArrayList<BackupItem> tempBackupList = new ArrayList<>(backupList.size());
         for (BackupItem item : backupList) {
             if (item.isSelected() || !onlySelected) {
                 tempBackupList.add(item);

@@ -11,10 +11,9 @@ public class FileIterator implements Iterator<File>{
     private int fileIndex;
     private File currentFile;
     public FileIterator(String filePath) {
-        File f = new File(filePath);
-        currentFile = f;
+        currentFile = new File(filePath);
         fileIndex = 0;
-        dirStack = new Stack<File>();
+        dirStack = new Stack<>();
         fileList = new File[0];
     }
 

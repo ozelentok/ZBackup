@@ -27,9 +27,9 @@ public class BackupListAdapter extends BaseAdapter {
         CheckBox isSelectedCheckBox;
 
         public ItemViewHolder(View view, BackupItem item) {
-            localPathView = (TextView) view.findViewById(R.id.local_path_view);
-            lastBackupView = (TextView) view.findViewById(R.id.last_backup_view);
-            isSelectedCheckBox = (CheckBox) view.findViewById(R.id.backup_check_box);
+            localPathView = view.findViewById(R.id.local_path_view);
+            lastBackupView = view.findViewById(R.id.last_backup_view);
+            isSelectedCheckBox = view.findViewById(R.id.backup_check_box);
             initializeViews(item);
         }
 
@@ -45,12 +45,7 @@ public class BackupListAdapter extends BaseAdapter {
             }
             isSelectedCheckBox.setOnCheckedChangeListener(null);
             isSelectedCheckBox.setChecked(item.isSelected());
-            isSelectedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    item.setSelected(isChecked);
-                }
-            });
+            isSelectedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> item.setSelected(isChecked));
         }
     }
 

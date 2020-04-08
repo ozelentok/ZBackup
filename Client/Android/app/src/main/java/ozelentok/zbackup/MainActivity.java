@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initEmptyPaths() {
         backupItemsArrays = new ArrayList<>();
-        backupItemsArrays.add(new ArrayList<BackupItem>());
-        backupItemsArrays.add(new ArrayList<BackupItem>());
+        backupItemsArrays.add(new ArrayList<>());
+        backupItemsArrays.add(new ArrayList<>());
     }
 
     private void initAdapters() {
@@ -259,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
                 prefs.getString("server", "127.0.0.1"),
                 Short.parseShort(prefs.getString("port", "1234")),
                 prefs.getString("password", ""));
-        ;
         backuper.backup(this);
     }
 
@@ -323,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View rootView = inflater.inflate(R.layout.path_dialog_layout, null);
-        final EditText pathEdit = (EditText) rootView.findViewById(R.id.file_path_edit_text);
+        final EditText pathEdit = rootView.findViewById(R.id.file_path_edit_text);
         pathEdit.setText(localPath);
         ColorByFileExistence(pathEdit, localPath);
         pathEdit.addTextChangedListener(new TextWatcher() {
@@ -340,12 +339,7 @@ public class MainActivity extends AppCompatActivity {
         });
         dialogBuilder.setTitle("Backup Path");
         dialogBuilder.setView(rootView);
-        dialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                editBackupItem(pathPosition, pathEdit.getText().toString());
-            }
-        });
+        dialogBuilder.setPositiveButton("Ok", (dialog, which) -> editBackupItem(pathPosition, pathEdit.getText().toString()));
         dialogBuilder.setNegativeButton("Cancel", null);
         dialogBuilder.show();
     }
@@ -364,12 +358,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle("Are you sure you want to delete this entry?");
         dialogBuilder.setMessage(localPath);
-        dialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                removeBackupItem(pathPosition);
-            }
-        });
+        dialogBuilder.setPositiveButton("Ok", (dialog, which) -> removeBackupItem(pathPosition));
         dialogBuilder.setNegativeButton("Cancel", null);
         dialogBuilder.show();
     }
@@ -425,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            ListView listView = (ListView)rootView.findViewById(R.id.section_list_view);
+            ListView listView = rootView.findViewById(R.id.section_list_view);
             listView.setAdapter(this.adapter);
             listView.setOnItemClickListener(this.adapter.getItemClickListener());
             listView.setOnItemLongClickListener(this.adapter.getItemLongClickListener());

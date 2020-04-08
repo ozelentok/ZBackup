@@ -2,12 +2,11 @@ package ozelentok.zbackup;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -59,7 +58,7 @@ public class ClientSocket {
 	}
 
 	public void send(final String stringToSend) throws IOException {
-		send(stringToSend.getBytes("UTF-8"));
+		send(stringToSend.getBytes(StandardCharsets.UTF_8));
 	}
 
 	public void send(final FileChannel sourceChannel, long position, int length) throws IOException

@@ -3,7 +3,6 @@ package ozelentok.zbackup;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
