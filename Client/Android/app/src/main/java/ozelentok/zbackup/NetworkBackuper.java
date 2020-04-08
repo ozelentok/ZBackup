@@ -1,19 +1,16 @@
 package ozelentok.zbackup;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.TimerTask;
 
 import ozelentok.zbackup.ProtocolCodes.ErrorCode;
 
@@ -24,6 +21,9 @@ public class NetworkBackuper extends Backuper {
     private short port;
     private String password;
     private NetworkBackupTask backupTask;
+
+    private static final String CHANNEL_ID = "NetworkBackup";
+    private static final String CHANNEL_NAME = "Network Backup";
 
     public NetworkBackuper(ArrayList<BackupItem> backupList, boolean onlySelected, String server, short port, String password) {
         super(backupList, onlySelected);
@@ -53,8 +53,8 @@ public class NetworkBackuper extends Backuper {
 
         private MainActivity activity;
         private NotificationManager nManager;
-        private NotificationCompat.Builder nBuilder;
-        private NotificationCompat.BigTextStyle style;
+        private Notification.Builder nBuilder;
+        private Notification.BigTextStyle style;
         private TransferStatus status;
         private static final int NOTIFICATION_ID = 2;
 
@@ -68,13 +68,17 @@ public class NetworkBackuper extends Backuper {
             this.user = user;
             this.password = password;
             this.nManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-            this.nBuilder = new NotificationCompat.Builder(activity);
-            this.style = new NotificationCompat.BigTextStyle().setBigContentTitle("Network Backup in Progress");
+            this.nBuilder = new Notification.Builder(activity, CHANNEL_ID);
+            this.style = new Notification.BigTextStyle().setBigContentTitle("Network Backup in Progress");
             this.status = new TransferStatus();
             nBuilder.setContentTitle("Network Backup in Progress");
             nBuilder.setSmallIcon(R.drawable.ic_notification);
             nBuilder.setStyle(style);
             nBuilder.setOngoing(true);
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH);
+            channel.setSound(null, null);
+            nManager.createNotificationChannel(channel);
         }
 
         protected String doInBackground(BackupItem... backupItems) {

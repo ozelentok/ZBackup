@@ -8,16 +8,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -29,6 +21,16 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements ActionBar.TabListener {
+public class MainActivity extends AppCompatActivity {
 
     public static final int LOCAL_ARRAY = 0;
     public static final int NETWORK_ARRAY = 1;
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     private static final String CONFIG_FILE_NAME = "path.config";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
+    private ViewPager2 mViewPager;
     private ArrayList<ArrayList<BackupItem>> backupItemsArrays;
     private BackupListAdapter[] backupAdapters;
     private boolean backupsLocked;
@@ -70,9 +72,6 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     }
 
     private void checkForPermissions() {
-        if (Build.VERSION.SDK_INT < 23) {
-        	return;
-        }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     }
 
     private void initEmptyPaths() {
-        backupItemsArrays = new ArrayList<ArrayList<BackupItem>>();
+        backupItemsArrays = new ArrayList<>();
         backupItemsArrays.add(new ArrayList<BackupItem>());
         backupItemsArrays.add(new ArrayList<BackupItem>());
     }
@@ -124,43 +123,43 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     }
 
     private void initPages() {
-        final ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        mSectionsPagerAdapter = new SectionsPagerAdapter(
-                getSupportFragmentManager(),backupAdapters);
+        mSectionsPagerAdapter = new SectionsPagerAdapter(this, backupAdapters);
 
-        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager = findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        final TabLayout tabLayout = findViewById(R.id.tab_layout);
+        new TabLayoutMediator(tabLayout, mViewPager,
+                (tab, position) -> tab.setText(mSectionsPagerAdapter.getPageTitle(position))
+        ).attach();
 
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            }
+
             @Override
             public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
+                super.onPageSelected(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
             }
         });
-        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-            actionBar.addTab(
-                    actionBar.newTab()
-                            .setText(mSectionsPagerAdapter.getPageTitle(i))
-                            .setTabListener(this));
-        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.action_add_item:
                 showNewItemPrompt();
@@ -272,19 +271,6 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
         backupsLocked = false;
     }
 
-    @Override
-    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-        mViewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
-    @Override
-    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-    }
-
     private void showNewItemPrompt() {
         openPathDialog();
     }
@@ -324,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (!(requestCode == FILE_CHOICE_REQUEST && resultCode == RESULT_OK)) {
             return;
         }
@@ -387,27 +374,15 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
         dialogBuilder.show();
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
+    public class SectionsPagerAdapter extends FragmentStateAdapter {
         private BackupListAdapter[] adapters;
 
-        public SectionsPagerAdapter(FragmentManager fm, BackupListAdapter[] adapters) {
-            super(fm);
+        SectionsPagerAdapter(FragmentActivity fa, BackupListAdapter[] adapters) {
+            super(fa);
             this.adapters = adapters;
         }
 
-        @Override
-        public Fragment getItem(int position) {
-            return PlaceholderFragment.newInstance(position + 1, adapters[position]);
-        }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
+        CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
             switch (position) {
                 case 0:
@@ -417,6 +392,17 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
             }
             return null;
         }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return PlaceholderFragment.newInstance(position + 1, adapters[position]);
+        }
+
+        @Override
+        public int getItemCount() {
+            return 2;
+        }
     }
 
     public static class PlaceholderFragment extends Fragment {
@@ -424,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
 
         private BackupListAdapter adapter;
 
-        public static PlaceholderFragment newInstance(int sectionNumber, BackupListAdapter adapter) {
+        static PlaceholderFragment newInstance(int sectionNumber, BackupListAdapter adapter) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             fragment.adapter = adapter;
             Bundle args = new Bundle();

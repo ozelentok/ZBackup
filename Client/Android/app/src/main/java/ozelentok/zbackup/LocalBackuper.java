@@ -1,15 +1,19 @@
 package ozelentok.zbackup;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.app.NotificationCompat;
 
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.AesKeyStrength;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 import net.lingala.zip4j.progress.ProgressMonitor;
-import net.lingala.zip4j.util.Zip4jConstants;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,6 +24,10 @@ public class LocalBackuper extends Backuper {
     private String storageDir;
     private LocalBackupTask backupTask;
 	private char[] password;
+
+	private static final String CHANNEL_ID = "LocalBackup";
+	private static final String CHANNEL_NAME = "Local Backup";
+
 	public LocalBackuper(ArrayList<BackupItem> backupList, boolean onlySelected,
 						 String storageDir, char[] password) {
 		super(backupList, onlySelected);
@@ -43,8 +51,8 @@ public class LocalBackuper extends Backuper {
 		private String storageDir;
 		private MainActivity activity;
 		private NotificationManager nManager;
-		private NotificationCompat.Builder nBuilder;
-		private NotificationCompat.BigTextStyle style;
+		private Notification.Builder nBuilder;
+		private Notification.BigTextStyle style;
 		private char[] zipPassword;
 		private static final int NOTIFICATION_ID = 1;
 
@@ -55,13 +63,18 @@ public class LocalBackuper extends Backuper {
 			this.storageDir = storageDir;
 			this.zipPassword = zipPassword;
 			new File(storageDir).mkdir();
+
 			this.nManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-			this.nBuilder = new NotificationCompat.Builder(activity);
-			this.style = new NotificationCompat.BigTextStyle().setBigContentTitle("Local Backup in Progress");
+			this.nBuilder = new Notification.Builder(activity, CHANNEL_ID);
+			this.style = new Notification.BigTextStyle().setBigContentTitle("Local Backup in Progress");
 			nBuilder.setContentTitle("Local Backup in Progress");
 			nBuilder.setSmallIcon(R.drawable.ic_notification);
 			nBuilder.setStyle(style);
 			nBuilder.setOngoing(true);
+			NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+					NotificationManager.IMPORTANCE_HIGH);
+			channel.setSound(null, null);
+			nManager.createNotificationChannel(channel);
 		}
 
 		protected String doInBackground(BackupItem... backupItems) {
@@ -88,9 +101,9 @@ public class LocalBackuper extends Backuper {
 					ZipFile zipFile = createZip(rootFile);
 					ProgressMonitor progressMonitor = addToZip(zipFile, rootFile);
 
-					while (progressMonitor.getState() == ProgressMonitor.STATE_BUSY) {
+					while (progressMonitor.getState() == ProgressMonitor.State.BUSY) {
 						if (LocalBackupTask.this.isCancelled()) {
-							progressMonitor.cancelAllTasks();
+							progressMonitor.setCancelAllTasks(true);
 							throw new RuntimeException("Local Backup Cancelled");
 						}
 						int progress = progressMonitor.getPercentDone();
@@ -115,21 +128,24 @@ public class LocalBackuper extends Backuper {
 		private ZipFile createZip(File rootFile) throws ZipException {
 			String filename = rootFile.getAbsolutePath().substring(1).replaceAll("/", "_") + ".zip";
 			String filepath = new File(storageDir, filename).getAbsolutePath();
-			return new ZipFile(filepath);
+			if (zipPassword != null && zipPassword.length > 0) {
+				return new ZipFile(filepath);
+			}
+			return new ZipFile(filepath, zipPassword);
+
 		}
 
 		private ProgressMonitor addToZip(ZipFile zipFile, File rootFile) throws ZipException {
 			zipFile.setRunInThread(true);
 			ZipParameters zipParameters = new ZipParameters();
 			zipParameters.setFileNameInZip(rootFile.getName());
-			zipParameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-			zipParameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
+			zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
+			zipParameters.setCompressionLevel(CompressionLevel.FAST);
 
 			if (zipPassword.length > 0) {
 				zipParameters.setEncryptFiles(true);
-				zipParameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
-				zipParameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-				zipParameters.setPassword(zipPassword);
+				zipParameters.setEncryptionMethod(EncryptionMethod.AES);
+				zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
 			}
 			if (rootFile.isDirectory()) {
 				zipParameters.setIncludeRootFolder(false);

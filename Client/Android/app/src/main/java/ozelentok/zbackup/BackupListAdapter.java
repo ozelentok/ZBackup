@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 public class BackupListAdapter extends BaseAdapter {
     private final ArrayList<BackupItem> backupItems;
@@ -53,9 +54,7 @@ public class BackupListAdapter extends BaseAdapter {
         }
     }
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat(
-            "yyyy-MM-dd EEE HH:mm:ss"
-    );
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd EEE HH:mm:ss", Locale.US);
 
     public BackupListAdapter(ArrayList<BackupItem> backupItems, MainActivity activity) {
         this.backupItems = backupItems;
