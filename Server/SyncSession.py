@@ -82,7 +82,7 @@ class SyncSession:
         file_path = file_path.decode('utf-8')
         if '..' in file_path:
             return None
-        if file_path[0] is '/':
+        if file_path[0] == '/':
             file_path = file_path[1:]
         file_path = file_path.replace('/', os.path.sep)
         return os.path.join(self._user_dir, file_path)

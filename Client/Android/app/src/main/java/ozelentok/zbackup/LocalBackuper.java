@@ -138,7 +138,6 @@ public class LocalBackuper extends Backuper {
 		private ProgressMonitor addToZip(ZipFile zipFile, File rootFile) throws ZipException {
 			zipFile.setRunInThread(true);
 			ZipParameters zipParameters = new ZipParameters();
-			zipParameters.setFileNameInZip(rootFile.getName());
 			zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
 			zipParameters.setCompressionLevel(CompressionLevel.FAST);
 
