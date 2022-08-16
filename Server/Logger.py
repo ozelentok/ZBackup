@@ -4,7 +4,7 @@ from datetime import datetime
 
 class Logger:
     def __init__(self, log_file_path):
-        self._log_file = open(log_file_path, 'a')
+        self._log_file = open(log_file_path, 'a', encoding='utf-8')
 
     def log(self, text):
         time_prompt = datetime.now().strftime('[%Y-%m-%d %H:%M:%S]')
